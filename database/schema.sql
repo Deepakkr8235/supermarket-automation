@@ -1,0 +1,5 @@
+CREATE DATABASE IF NOT EXISTS supermarket_db; USE supermarket_db;
+CREATE TABLE IF NOT EXISTS products(id BIGINT PRIMARY KEY AUTO_INCREMENT,code VARCHAR(40) NOT NULL UNIQUE,name VARCHAR(120) NOT NULL,category VARCHAR(80),price DECIMAL(12,2) NOT NULL,stock INT NOT NULL DEFAULT 0,low_stock_level INT NOT NULL DEFAULT 5);
+CREATE TABLE IF NOT EXISTS sales(id BIGINT PRIMARY KEY AUTO_INCREMENT,bill_number VARCHAR(80) NOT NULL UNIQUE,payment_method VARCHAR(20) NOT NULL,total DECIMAL(12,2) NOT NULL,created_at DATETIME NOT NULL);
+CREATE TABLE IF NOT EXISTS sale_items(id BIGINT PRIMARY KEY AUTO_INCREMENT,sale_id BIGINT NOT NULL,product_id BIGINT,product_name VARCHAR(120),quantity INT NOT NULL,unit_price DECIMAL(12,2),subtotal DECIMAL(12,2),FOREIGN KEY(sale_id) REFERENCES sales(id));
+INSERT IGNORE INTO products(code,name,category,price,stock,low_stock_level) VALUES ('P101','Basmati Rice 1kg','Grocery',85,40,8),('P102','Milk 1L','Dairy',30,25,6),('P103','Brown Bread','Bakery',45,12,4),('P104','Cooking Oil 1L','Grocery',145,18,5),('P105','Bath Soap','Personal Care',38,3,5);

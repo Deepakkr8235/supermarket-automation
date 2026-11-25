@@ -1,0 +1,13 @@
+package com.sas.supermarket.service;
+import com.sas.supermarket.dto.CheckoutRequest; import com.sas.supermarket.model.*; import com.sas.supermarket.repository.*;
+import org.springframework.stereotype.Service; import org.springframework.transaction.annotation.Transactional;
+import java.math.*; import java.time.*; import java.util.*;
+@Service public class SupermarketService {
+ private final ProductRepository products; private final SaleRepository sales;
+ public SupermarketService(ProductRepository p,SaleRepository s){products=p;sales=s;}
+ public Map<String,Object> dashboard(){var ps=products.findAll();var ss=sales.findByCreatedAtBetween(LocalDate.now().atStartOfDay(),LocalDate.now().plusDays(1).atStartOfDay());var sum=ss.stream().map(Sale::getTotal).reduce(BigDecimal.ZERO,BigDecimal::add);return Map.of("productCount",ps.size(),"lowStockCount",ps.stream().filter(p->p.getStock()<=p.getLowStockLevel()).count(),"todayBills",ss.size(),"todaySales",sum);}
+ @Transactional public Sale checkout(CheckoutRequest r){String method=r.paymentMethod().toUpperCase(Locale.ROOT);if(!Set.of("CASH","UPI","CARD").contains(method))throw new IllegalArgumentException("Choose CASH, UPI or CARD");Map<Long,Integer> q=new LinkedHashMap<>();for(var x:r.items())q.merge(x.productId(),x.quantity(),Integer::sum);List<Product> ps=new ArrayList<>();BigDecimal total=BigDecimal.ZERO;for(var e:q.entrySet()){Product p=products.findById(e.getKey()).orElseThrow(()->new IllegalArgumentException("Product not found"));if(p.getStock()<e.getValue())throw new IllegalArgumentException("Insufficient stock: "+p.getName());ps.add(p);total=total.add(p.getPrice().multiply(BigDecimal.valueOf(e.getValue())));}Sale sale=new Sale("SAS-"+System.currentTimeMillis(),method,total);for(Product p:ps){int n=q.get(p.getId());p.deductStock(n);sale.addItem(new SaleItem(p.getId(),p.getName(),n,p.getPrice(),p.getPrice().multiply(BigDecimal.valueOf(n))));}return sales.save(sale);}
+ @Transactional public Product saveProduct(Product p){if(p.getId()==null&&products.existsByCodeIgnoreCase(p.getCode()))throw new IllegalArgumentException("Product code already exists");return products.save(p);}
+ @Transactional public Product update(Long id,Product d){Product p=products.findById(id).orElseThrow(()->new IllegalArgumentException("Product not found"));p.setCode(d.getCode());p.setName(d.getName());p.setCategory(d.getCategory());p.setPrice(d.getPrice());p.setStock(d.getStock());p.setLowStockLevel(d.getLowStockLevel());return p;}
+ @Transactional public void stockIn(Long id,int n){products.findById(id).orElseThrow(()->new IllegalArgumentException("Product not found")).addStock(n);}
+}

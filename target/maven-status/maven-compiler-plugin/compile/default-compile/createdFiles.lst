@@ -1,0 +1,10 @@
+com/sas/supermarket/repository/SaleRepository.class
+com/sas/supermarket/SupermarketApplication.class
+com/sas/supermarket/dto/CheckoutRequest.class
+com/sas/supermarket/model/Product.class
+com/sas/supermarket/dto/CheckoutRequest$Line.class
+com/sas/supermarket/model/SaleItem.class
+com/sas/supermarket/repository/ProductRepository.class
+com/sas/supermarket/model/Sale.class
+com/sas/supermarket/service/SupermarketService.class
+com/sas/supermarket/controller/ApiController.class
